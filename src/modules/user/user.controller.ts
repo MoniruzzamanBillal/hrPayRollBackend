@@ -5,11 +5,16 @@ import {
   Param,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Role } from 'src/generated/prisma/enums';
 import { CreateUserDto } from './dto/create.user.dto';
 import { UserService } from './user.service';
 
@@ -47,23 +52,16 @@ export class UserController {
   }
 
   // ! for getting all users
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Get('')
   async getAllUser() {
     const result = await this.userService.getAllUser();
-
-    // return result;
 
     return {
       result,
       message: 'All Users retrived successfully!!!',
     };
-
-    // return {
-    //   success: true,
-    //   status: HttpStatus.OK,
-    //   message: 'all users retrived successfully!!!',
-    //   data: result,
-    // };
   }
 
   // ! for getting single user data

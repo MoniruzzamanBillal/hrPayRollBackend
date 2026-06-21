@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { WinstonModule } from 'nest-winston';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -11,20 +12,27 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { loggerConfig } from './core/logger/winston.config';
 import { AiIntegrationModule } from './modules/ai-integration/ai-integration.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { DepartmentModule } from './modules/department/department.module';
 import { ProjectModule } from './modules/project/project.module';
 import { UserModule } from './modules/user/user.module';
+import { DesignationModule } from './modules/designation/designation.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    JwtModule.register({ global: true }),
     WinstonModule.forRoot(loggerConfig),
     UserModule,
     AuthModule,
     ProjectModule,
 
     AiIntegrationModule,
+
+    DepartmentModule,
+
+    DesignationModule,
   ],
   controllers: [AppController],
   providers: [
@@ -35,5 +43,6 @@ import { UserModule } from './modules/user/user.module';
     JwtAuthGuard,
     RolesGuard,
   ],
+  exports: [JwtModule],
 })
 export class AppModule {}

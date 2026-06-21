@@ -30,7 +30,7 @@ export class AuthService {
     );
 
     if (!isPasswordMatch) {
-      throw new UnauthorizedException('Wrong password!!!');
+      throw new UnauthorizedException('Invalid password!!!');
     }
 
     const tokenPayload = {

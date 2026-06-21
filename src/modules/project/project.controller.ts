@@ -7,12 +7,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { createProjectDto } from './dto/createProject.dto';
-import { ProjectService } from './project.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { Role } from 'src/generated/prisma/enums';
 import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Role } from 'src/generated/prisma/enums';
+import { createProjectDto } from './dto/createProject.dto';
+import { ProjectService } from './project.service';
 
 @Controller('project')
 export class ProjectController {
