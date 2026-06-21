@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { WinstonModule } from 'nest-winston';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -13,18 +14,22 @@ import { AiIntegrationModule } from './modules/ai-integration/ai-integration.mod
 import { AuthModule } from './modules/auth/auth.module';
 import { ProjectModule } from './modules/project/project.module';
 import { UserModule } from './modules/user/user.module';
+import { DepartmentModule } from './modules/department/department.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    JwtModule.register({ global: true }),
     WinstonModule.forRoot(loggerConfig),
     UserModule,
     AuthModule,
     ProjectModule,
 
     AiIntegrationModule,
+
+    DepartmentModule,
   ],
   controllers: [AppController],
   providers: [
@@ -35,5 +40,6 @@ import { UserModule } from './modules/user/user.module';
     JwtAuthGuard,
     RolesGuard,
   ],
+  exports: [JwtModule],
 })
 export class AppModule {}

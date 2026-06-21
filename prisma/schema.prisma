@@ -95,6 +95,8 @@ model Department {
   description String?
   createdAt   DateTime @default(now())
 
+  isDeleted Boolean @default(false)
+
   employees    Employee[]
   designations Designation[]
 
@@ -107,6 +109,8 @@ model Designation {
   departmentId String
   department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   createdAt    DateTime   @default(now())
+
+  isDeleted Boolean @default(false)
 
   employees Employee[]
 
@@ -169,6 +173,8 @@ model EmployeeDocument {
   type       String // e.g. NID, CONTRACT, CERTIFICATE
   fileUrl    String
   uploadedAt DateTime @default(now())
+
+  isDeleted Boolean @default(false)
 
   @@index([employeeId])
   @@map("employee_documents")
