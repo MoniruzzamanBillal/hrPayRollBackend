@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
@@ -25,5 +25,28 @@ export class DepartmentController {
     };
   }
 
+  //   ! for getting all department
+  @Get('')
+  async getAllDept() {
+    const result = await this.departmentService.getAllDept();
+
+    return {
+      result,
+      message: 'All Department retrived Successfully!!!',
+    };
+  }
+
+  //   ! for getting single department data
+  @Get(':id')
+  async getSingleDepartment(@Param('id') id: string) {
+    const result = await this.departmentService.getSingleDept(id);
+
+    return {
+      result,
+      message: 'Department retrived Successfully!!!',
+    };
+  }
+
+  //
   //
 }
