@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { AddDeptDto } from './dto/AddDeptDto';
+import { UpdateDeptDto } from './dto/UpdateDeptDto';
 
 @Injectable()
 export class DepartmentService {
@@ -13,6 +14,24 @@ export class DepartmentService {
   // ! for creating new department
   async createDepartment(payload: AddDeptDto) {
     const result = await this.prisma.department.create({ data: payload });
+
+    return result;
+  }
+
+  // ! for updating new department
+  async updateDepartment(payload: UpdateDeptDto, id: string) {
+    const deptData = await this.prisma.department.findFirst({
+      where: { id: id, isDeleted: false },
+    });
+
+    if (!deptData) {
+      throw new NotFoundException("This Department don't exist!!!");
+    }
+
+    const result = await this.prisma.department.update({
+      where: { id },
+      data: payload,
+    });
 
     return result;
   }

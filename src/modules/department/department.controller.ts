@@ -1,10 +1,19 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Role } from 'src/generated/prisma/enums';
 import { DepartmentService } from './department.service';
 import { AddDeptDto } from './dto/AddDeptDto';
+import { UpdateDeptDto } from './dto/UpdateDeptDto';
 
 @Controller('department')
 export class DepartmentController {
@@ -22,6 +31,19 @@ export class DepartmentController {
     return {
       result,
       message: 'Department Created Successfully!!!',
+    };
+  }
+
+  //   ! for updating department
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Patch(':id')
+  async updateDept(@Body() payload: UpdateDeptDto, @Param('id') id: string) {
+    const result = await this.departmentService.updateDepartment(payload, id);
+
+    return {
+      result,
+      message: 'Department Updated Successfully!!',
     };
   }
 

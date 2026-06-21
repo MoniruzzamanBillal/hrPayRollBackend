@@ -1,8 +1,8 @@
-import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class AddDeptDto {
   @IsString()
-  @MinLength(1)
+  @IsNotEmpty({ message: 'Name is required!!!' })
   @MaxLength(50)
   name: string;
 
