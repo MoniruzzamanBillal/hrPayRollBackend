@@ -97,24 +97,21 @@ model Department {
 
   isDeleted Boolean @default(false)
 
-  employees    Employee[]
-  designations Designation[]
+  employees Employee[]
 
   @@map("departments")
 }
 
 model Designation {
-  id           String     @id @default(uuid())
-  title        String
-  departmentId String
-  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
-  createdAt    DateTime   @default(now())
+  id    String @id @default(uuid())
+  title String @unique
+
+  createdAt DateTime @default(now())
 
   isDeleted Boolean @default(false)
 
   employees Employee[]
 
-  @@unique([title, departmentId])
   @@map("designations")
 }
 

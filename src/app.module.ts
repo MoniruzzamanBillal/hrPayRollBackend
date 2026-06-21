@@ -12,9 +12,10 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { loggerConfig } from './core/logger/winston.config';
 import { AiIntegrationModule } from './modules/ai-integration/ai-integration.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { DepartmentModule } from './modules/department/department.module';
 import { ProjectModule } from './modules/project/project.module';
 import { UserModule } from './modules/user/user.module';
-import { DepartmentModule } from './modules/department/department.module';
+import { DesignationModule } from './modules/designation/designation.module';
 
 @Module({
   imports: [
@@ -30,6 +31,8 @@ import { DepartmentModule } from './modules/department/department.module';
     AiIntegrationModule,
 
     DepartmentModule,
+
+    DesignationModule,
   ],
   controllers: [AppController],
   providers: [
