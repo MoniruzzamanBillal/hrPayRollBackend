@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { CreateUserDto } from './dto/create.user.dto';
 import { UserService } from './user.service';
 
@@ -8,8 +19,26 @@ export class UserController {
 
   //  ! for creating new user
   @Post('')
-  async createNewUser(@Body() payload: CreateUserDto) {
-    const result = await this.userService.createUser(payload);
+  @UseInterceptors(
+    FileInterceptor('profileImage', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, uniqueName + extname(file.originalname));
+        },
+      }),
+    }),
+  )
+  async createNewUser(
+    @Body() payload: CreateUserDto,
+    @UploadedFile() profileImage: Express.Multer.File,
+  ) {
+    const imageUrl =
+      profileImage &&
+      `${process.env.APP_URL}/uploads/${profileImage?.filename}`;
+
+    const result = await this.userService.createUser(payload, imageUrl);
 
     return {
       result,

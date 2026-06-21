@@ -26,7 +26,7 @@ export class AuthService {
 
     const isPasswordMatch = await bcrypt.compare(
       payload?.password,
-      userData?.password,
+      userData?.passwordHash,
     );
 
     if (!isPasswordMatch) {

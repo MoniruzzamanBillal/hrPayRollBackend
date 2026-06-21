@@ -7,12 +7,22 @@ import { CreateUserDto } from './dto/create.user.dto';
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  //  ! for creating a new user
-  async createUser(payload: CreateUserDto) {
-    const hashedPassword = await bcrypt.hash(payload?.password, 10);
+  // ! for creating a new user
+  async createUser(payload: CreateUserDto, imageUrl: string) {
+    const saltRounds = parseInt(process.env.SALT_ROUNDS || '10');
+
+    const hashedPassword = await bcrypt.hash(payload?.password, saltRounds);
+
+    const userData = {
+      name: payload.name,
+      email: payload.email,
+      passwordHash: hashedPassword,
+
+      ...(imageUrl && { profileImage: imageUrl }),
+    };
 
     const result = await this.prisma.user.create({
-      data: { ...payload, password: hashedPassword },
+      data: userData,
     });
     return result;
   }
