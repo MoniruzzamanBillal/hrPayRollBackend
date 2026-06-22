@@ -8,7 +8,7 @@ export class UserService {
   constructor(private prisma: PrismaService) {}
 
   // ! for creating a new user
-  async createUser(payload: CreateUserDto, imageUrl: string) {
+  async createUser(payload: CreateUserDto, imageUrl?: string) {
     const saltRounds = parseInt(process.env.SALT_ROUNDS || '10');
 
     const hashedPassword = await bcrypt.hash(payload?.password, saltRounds);
