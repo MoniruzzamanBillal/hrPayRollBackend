@@ -1,4 +1,4 @@
-import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 
@@ -14,10 +14,8 @@ export class AuthController {
     const result = await this.authService.loginUser(payload);
 
     return {
-      success: true,
-      status: HttpStatus.OK,
+      result,
       message: 'User logged in successfully!!!',
-      data: result,
     };
   }
 

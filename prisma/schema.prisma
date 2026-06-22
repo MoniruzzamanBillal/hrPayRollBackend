@@ -16,6 +16,7 @@ enum Role {
   HR_MANAGER
   DEPARTMENT_MANAGER
   EMPLOYEE
+  TEAM_LEAD
 }
 
 enum EmploymentType {

@@ -5,6 +5,8 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma.service';
 import { LoginDto } from './dto/login.dto';
 
+// employeeCode = `EMP-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -53,6 +55,8 @@ export class AuthService {
 
     //
   }
+
+  // ! for creating employee
 
   //
 }

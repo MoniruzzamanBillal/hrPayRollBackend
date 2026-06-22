@@ -43,10 +43,9 @@ export class UserController {
       profileImage &&
       `${process.env.APP_URL}/uploads/${profileImage?.filename}`;
 
-    const result = await this.userService.createUser(payload, imageUrl);
+    await this.userService.createUser(payload, imageUrl);
 
     return {
-      result,
       message: 'User Registered successfully!!!',
     };
   }

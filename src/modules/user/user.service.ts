@@ -21,10 +21,9 @@ export class UserService {
       ...(imageUrl && { profileImage: imageUrl }),
     };
 
-    const result = await this.prisma.user.create({
+    await this.prisma.user.create({
       data: userData,
     });
-    return result;
   }
 
   // ! for getting new user
