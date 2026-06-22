@@ -16,6 +16,7 @@ import { DepartmentModule } from './modules/department/department.module';
 import { ProjectModule } from './modules/project/project.module';
 import { UserModule } from './modules/user/user.module';
 import { DesignationModule } from './modules/designation/designation.module';
+import { EmployeeModule } from './modules/employee/employee.module';
 
 @Module({
   imports: [
@@ -33,6 +34,8 @@ import { DesignationModule } from './modules/designation/designation.module';
     DepartmentModule,
 
     DesignationModule,
+
+    EmployeeModule,
   ],
   controllers: [AppController],
   providers: [
