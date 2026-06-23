@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -68,6 +69,18 @@ export class DesignationController {
     return {
       result,
       message: 'Designation Data Updated successfully!!!!',
+    };
+  }
+
+  // ! for deleting designation
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.HR_MANAGER)
+  @Delete(':id')
+  async deleteDesignation(@Param('id') id: string) {
+    await this.designationService.deleteDesignation(id);
+
+    return {
+      message: 'Designation Deleted Successfully!!!',
     };
   }
 

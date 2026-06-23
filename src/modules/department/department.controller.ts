@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -66,6 +67,18 @@ export class DepartmentController {
     return {
       result,
       message: 'Department retrived Successfully!!!',
+    };
+  }
+
+  // ! for deleting department
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Delete(':id')
+  async deleteDept(@Param('id') id: string) {
+    await this.departmentService.deleteDepartment(id);
+
+    return {
+      message: 'Department Deleted Successfully!!!',
     };
   }
 
