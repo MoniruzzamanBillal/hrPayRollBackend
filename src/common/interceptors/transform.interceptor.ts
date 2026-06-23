@@ -10,6 +10,7 @@ import { map, Observable } from 'rxjs';
 interface ResponseData {
   message?: string;
   result?: unknown;
+  meta?: Record<string, unknown>;
   [key: string]: unknown;
 }
 
@@ -23,12 +24,19 @@ export class TransformInterceptor implements NestInterceptor {
       map((data: unknown) => {
         const response = context.switchToHttp().getResponse<Response>();
         const responseData = data as ResponseData;
-        return {
+
+        const shaped: Record<string, unknown> = {
           success: true,
           statusCode: response.statusCode,
           message: responseData.message || 'Request successful',
           data: responseData.result ?? data,
         };
+
+        if (responseData.meta !== undefined) {
+          shaped.meta = responseData.meta;
+        }
+
+        return shaped;
       }),
     );
   }

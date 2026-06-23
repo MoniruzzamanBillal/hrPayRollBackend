@@ -16,6 +16,7 @@ export interface UserPayload {
   role: string;
   iat?: number;
   exp?: number;
+  employeeId?: string;
 }
 
 declare module 'express' {

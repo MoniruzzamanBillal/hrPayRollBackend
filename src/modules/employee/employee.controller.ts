@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -21,6 +22,7 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Role } from 'src/generated/prisma/enums';
 import { CreateEmployeeDto } from './dto/CreateEmployeeDto';
 import { EmployeeDocumentDto } from './dto/EmployeeDocumentDto';
+import { GetEmployeeQueryDto } from './dto/GetEmployeeQueryDto';
 import { UpdateEmployeeDto } from './dto/UpdateEmployeeDto';
 import { EmployeeService } from './employee.service';
 
@@ -62,11 +64,12 @@ export class EmployeeController {
   //
   // ! for getting all employee
   @Get('')
-  async getAllEmployee() {
-    const result = await this.employeeService.getAllEmployee();
+  async getAllEmployee(@Query() query: GetEmployeeQueryDto) {
+    const { data, meta } = await this.employeeService.getAllEmployee(query);
 
     return {
-      result,
+      result: data,
+      meta,
       message: 'All Employee retrived successfully!!',
     };
   }

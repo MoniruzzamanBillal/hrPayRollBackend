@@ -8,6 +8,7 @@ import { EmployeeStatus } from 'src/generated/prisma/enums';
 import { PrismaService } from 'src/prisma.service';
 import { CreateEmployeeDto } from './dto/CreateEmployeeDto';
 import { EmployeeDocumentDto } from './dto/EmployeeDocumentDto';
+import { GetEmployeeQueryDto } from './dto/GetEmployeeQueryDto';
 import { UpdateEmployeeDto } from './dto/UpdateEmployeeDto';
 
 @Injectable()
@@ -64,16 +65,49 @@ export class EmployeeService {
 
   //
   // ! for getting all employee
-  async getAllEmployee() {
-    const result = await this.prisma.employee.findMany({
-      where: {
-        status: {
-          in: [EmployeeStatus.ACTIVE, EmployeeStatus.ON_LEAVE],
-        },
-      },
-    });
+  async getAllEmployee(query: GetEmployeeQueryDto) {
+    const { search, status, page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
 
-    return result;
+    const statusFilter = status
+      ? { status }
+      : { status: { in: [EmployeeStatus.ACTIVE, EmployeeStatus.ON_LEAVE] } };
+
+    const searchFilter = search
+      ? {
+          OR: [
+            { firstName: { contains: search, mode: 'insensitive' as const } },
+            { lastName: { contains: search, mode: 'insensitive' as const } },
+            {
+              employeeCode: { contains: search, mode: 'insensitive' as const },
+            },
+            { phone: { contains: search, mode: 'insensitive' as const } },
+          ],
+        }
+      : {};
+
+    const where = { ...statusFilter, ...searchFilter };
+
+    const [data, totalItems] = await Promise.all([
+      this.prisma.employee.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.employee.count({ where }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        currentPage: page,
+        itemCount: data.length,
+        limit,
+        totalItems,
+        totalPage: Math.ceil(totalItems / limit),
+      },
+    };
   }
   //
 
@@ -82,6 +116,7 @@ export class EmployeeService {
     const result = await this.prisma.employee.findFirst({
       where: {
         id,
+
         status: {
           in: [EmployeeStatus.ACTIVE, EmployeeStatus.ON_LEAVE],
         },

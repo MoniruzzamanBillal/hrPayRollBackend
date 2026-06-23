@@ -17,6 +17,7 @@ import { ProjectModule } from './modules/project/project.module';
 import { UserModule } from './modules/user/user.module';
 import { DesignationModule } from './modules/designation/designation.module';
 import { EmployeeModule } from './modules/employee/employee.module';
+import { AttendanceModule } from './modules/attendance/attendance.module';
 
 @Module({
   imports: [
@@ -36,6 +37,8 @@ import { EmployeeModule } from './modules/employee/employee.module';
     DesignationModule,
 
     EmployeeModule,
+
+    AttendanceModule,
   ],
   controllers: [AppController],
   providers: [
