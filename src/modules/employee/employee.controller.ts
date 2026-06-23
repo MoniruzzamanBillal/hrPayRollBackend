@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -13,11 +14,13 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { Roles } from 'src/common/decorators/roles.decorator';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { JwtAuthGuard, UserPayload } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Role } from 'src/generated/prisma/enums';
 import { CreateEmployeeDto } from './dto/CreateEmployeeDto';
+import { EmployeeDocumentDto } from './dto/EmployeeDocumentDto';
 import { UpdateEmployeeDto } from './dto/UpdateEmployeeDto';
 import { EmployeeService } from './employee.service';
 
@@ -119,6 +122,42 @@ export class EmployeeController {
 
     return {
       message: 'Employee terminated successfully!!!',
+    };
+  }
+
+  // ! for uploading employee document
+  @UseGuards(JwtAuthGuard)
+  @Post('document')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, uniqueName + extname(file.originalname));
+        },
+      }),
+    }),
+  )
+  async addEmployeeDocument(
+    @GetUser() user: UserPayload,
+    @Body() payload: EmployeeDocumentDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const fileUrl = file && `${process.env.APP_URL}/uploads/${file.filename}`;
+
+    if (!fileUrl) {
+      throw new BadRequestException('File is required');
+    }
+
+    await this.employeeService.addEmployeeDocument(
+      user.userId,
+      payload,
+      fileUrl,
+    );
+
+    return {
+      message: 'Employee Document uploaded successfully!!!',
     };
   }
 

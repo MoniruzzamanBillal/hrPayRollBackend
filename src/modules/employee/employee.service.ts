@@ -1,8 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { EmployeeStatus } from 'src/generated/prisma/enums';
 import { PrismaService } from 'src/prisma.service';
 import { CreateEmployeeDto } from './dto/CreateEmployeeDto';
+import { EmployeeDocumentDto } from './dto/EmployeeDocumentDto';
 import { UpdateEmployeeDto } from './dto/UpdateEmployeeDto';
 
 @Injectable()
@@ -79,6 +84,13 @@ export class EmployeeService {
         id,
         status: {
           in: [EmployeeStatus.ACTIVE, EmployeeStatus.ON_LEAVE],
+        },
+      },
+      include: {
+        documents: {
+          where: {
+            isDeleted: false,
+          },
         },
       },
     });
@@ -191,6 +203,33 @@ export class EmployeeService {
     });
   }
 
-  //
+  // ! for adding employee document
+  async addEmployeeDocument(
+    userId: string,
+    payload: EmployeeDocumentDto,
+    fileUrl: string,
+  ) {
+    const employee = await this.prisma.employee.findUnique({
+      where: {
+        userId,
+        status: {
+          in: [EmployeeStatus.ACTIVE, EmployeeStatus.ON_LEAVE],
+        },
+      },
+    });
+
+    if (!employee) {
+      throw new ForbiddenException('Current user is not an employee.');
+    }
+
+    await this.prisma.employeeDocument.create({
+      data: {
+        employeeId: employee.id,
+        type: payload.type,
+        fileUrl,
+      },
+    });
+  }
+
   //
 }
