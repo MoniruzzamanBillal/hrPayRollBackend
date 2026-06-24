@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { Roles } from 'src/common/decorators/roles.decorator';
@@ -14,6 +15,7 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Role } from 'src/generated/prisma/enums';
 import { DepartmentService } from './department.service';
 import { AddDeptDto } from './dto/AddDeptDto';
+import { GetDeptQueryDto } from './dto/GetDeptQueryDto';
 import { UpdateDeptDto } from './dto/UpdateDeptDto';
 
 @Controller('department')
@@ -50,8 +52,8 @@ export class DepartmentController {
 
   //   ! for getting all department
   @Get('')
-  async getAllDept() {
-    const result = await this.departmentService.getAllDept();
+  async getAllDept(@Query() query: GetDeptQueryDto) {
+    const result = await this.departmentService.getAllDept(query);
 
     return {
       result,

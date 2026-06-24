@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -16,6 +17,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Role } from 'src/generated/prisma/enums';
 import { CreateUserDto } from './dto/create.user.dto';
+import { GetUserQueryDto } from './dto/get.user.query.dto';
 import { UserService } from './user.service';
 
 @Controller('user')
@@ -54,8 +56,8 @@ export class UserController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Get('')
-  async getAllUser() {
-    const result = await this.userService.getAllUser();
+  async getAllUser(@Query() query: GetUserQueryDto) {
+    const result = await this.userService.getAllUser(query);
 
     return {
       result,

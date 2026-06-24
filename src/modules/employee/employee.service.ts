@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { EmployeeStatus } from 'src/generated/prisma/enums';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateEmployeeDto } from './dto/CreateEmployeeDto';
 import { EmployeeDocumentDto } from './dto/EmployeeDocumentDto';
 import { GetEmployeeQueryDto } from './dto/GetEmployeeQueryDto';

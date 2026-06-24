@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { Roles } from 'src/common/decorators/roles.decorator';
@@ -14,6 +15,7 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Role } from 'src/generated/prisma/enums';
 import { DesignationService } from './designation.service';
 import { CreateDesignationDto } from './dto/CreateDesignationDto';
+import { GetDesignationQueryDto } from './dto/GetDesignationQueryDto';
 import { UpdateDesignationDto } from './dto/UpdateDesignationDto';
 
 @Controller('designation')
@@ -36,8 +38,8 @@ export class DesignationController {
 
   //   ! for getting all Designation
   @Get('')
-  async getAllDesignation() {
-    const result = await this.designationService.getAllDepartment();
+  async getAllDesignation(@Query() query: GetDesignationQueryDto) {
+    const result = await this.designationService.getAllDesignation(query);
 
     return {
       result,

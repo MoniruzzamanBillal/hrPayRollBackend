@@ -1,6 +1,10 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { AttendanceStatus } from 'src/generated/prisma/enums';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class AttendanceService {
   constructor(private prisma: PrismaService) {}
@@ -14,7 +18,6 @@ export class AttendanceService {
     const existing = await this.prisma.attendanceRecord.findUnique({
       where: {
         employeeId_date: {
-          // this is the @@unique compound key
           employeeId,
           date: today,
         },
