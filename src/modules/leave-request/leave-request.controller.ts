@@ -24,48 +24,57 @@ export class LeaveRequestController {
 
   //! Employee submits a new leave request
   @Post()
-  create(@Body() dto: CreateLeaveRequestDto, @GetUser() user: UserPayload) {
-    return this.leaveRequestService.create(dto, user);
+  async create(
+    @Body() dto: CreateLeaveRequestDto,
+    @GetUser() user: UserPayload,
+  ) {
+    const result = await this.leaveRequestService.create(dto, user);
+    return result;
   }
 
   //! Get logged-in employee's own leave requests
   @Get('my')
-  getMyRequests(@GetUser() user: UserPayload) {
-    return this.leaveRequestService.getMyRequests(user);
+  async getMyRequests(@GetUser() user: UserPayload) {
+    const result = await this.leaveRequestService.getMyRequests(user);
+    return result;
   }
 
   //! Get pending leave requests for the manager's direct reports
   @Get('team')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.HR_MANAGER, Role.DEPARTMENT_MANAGER)
-  getTeamRequests(@GetUser() user: UserPayload) {
-    return this.leaveRequestService.getTeamRequests(user);
+  async getTeamRequests(@GetUser() user: UserPayload) {
+    const result = await this.leaveRequestService.getTeamRequests(user);
+    return result;
   }
 
   //! Approve a pending leave request
   @Patch(':id/approve')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.HR_MANAGER, Role.DEPARTMENT_MANAGER)
-  approve(@Param('id') id: string, @GetUser() user: UserPayload) {
-    return this.leaveRequestService.approve(id, user);
+  async approve(@Param('id') id: string, @GetUser() user: UserPayload) {
+    const result = await this.leaveRequestService.approve(id, user);
+    return result;
   }
 
   //! Reject a pending leave request with a reason
   @Patch(':id/reject')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.HR_MANAGER, Role.DEPARTMENT_MANAGER)
-  reject(
+  async reject(
     @Param('id') id: string,
     @Body() dto: RejectLeaveRequestDto,
     @GetUser() user: UserPayload,
   ) {
-    return this.leaveRequestService.reject(id, dto, user);
+    const result = await this.leaveRequestService.reject(id, dto, user);
+    return result;
   }
 
   //! Employee cancels their own pending request
   @Patch(':id/cancel')
-  cancel(@Param('id') id: string, @GetUser() user: UserPayload) {
-    return this.leaveRequestService.cancel(id, user);
+  async cancel(@Param('id') id: string, @GetUser() user: UserPayload) {
+    const result = await this.leaveRequestService.cancel(id, user);
+    return result;
   }
 
   //
