@@ -11,13 +11,12 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { loggerConfig } from './core/logger/winston.config';
 import { AiIntegrationModule } from './modules/ai-integration/ai-integration.module';
+import { AttendanceModule } from './modules/attendance/attendance.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { DepartmentModule } from './modules/department/department.module';
-import { ProjectModule } from './modules/project/project.module';
-import { UserModule } from './modules/user/user.module';
 import { DesignationModule } from './modules/designation/designation.module';
 import { EmployeeModule } from './modules/employee/employee.module';
-import { AttendanceModule } from './modules/attendance/attendance.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -28,7 +27,6 @@ import { AttendanceModule } from './modules/attendance/attendance.module';
     WinstonModule.forRoot(loggerConfig),
     UserModule,
     AuthModule,
-    ProjectModule,
 
     AiIntegrationModule,
 
