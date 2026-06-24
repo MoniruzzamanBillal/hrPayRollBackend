@@ -18,6 +18,7 @@ import { DesignationModule } from './modules/designation/designation.module';
 import { EmployeeModule } from './modules/employee/employee.module';
 import { LeaveRequestModule } from './modules/leave-request/leave-request.module';
 import { UserModule } from './modules/user/user.module';
+import { LeaveTypeModule } from './modules/leave-type/leave-type.module';
 
 @Module({
   imports: [
@@ -40,6 +41,8 @@ import { UserModule } from './modules/user/user.module';
     AttendanceModule,
 
     LeaveRequestModule,
+
+    LeaveTypeModule,
   ],
   controllers: [AppController],
   providers: [
