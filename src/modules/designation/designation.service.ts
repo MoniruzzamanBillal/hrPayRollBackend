@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { EmployeeStatus } from 'src/generated/prisma/enums';
 import { PrismaService } from 'src/prisma.service';
 import { CreateDesignationDto } from './dto/CreateDesignationDto';
 import { UpdateDesignationDto } from './dto/UpdateDesignationDto';
@@ -54,6 +59,37 @@ export class DesignationService {
     });
 
     return result;
+  }
+
+  // ! for deleting designation
+  async deleteDesignation(id: string) {
+    const desigData = await this.prisma.designation.findFirst({
+      where: { id, isDeleted: false },
+    });
+
+    if (!desigData) {
+      throw new NotFoundException("This Designation don't exist!!!");
+    }
+
+    const activeEmployeeCount = await this.prisma.employee.count({
+      where: {
+        designationId: id,
+        status: {
+          notIn: [EmployeeStatus.TERMINATED, EmployeeStatus.RESIGNED],
+        },
+      },
+    });
+
+    if (activeEmployeeCount > 0) {
+      throw new BadRequestException(
+        `Cannot delete designation. ${activeEmployeeCount} employee(s) are still assigned to it.`,
+      );
+    }
+
+    await this.prisma.designation.update({
+      where: { id },
+      data: { isDeleted: true },
+    });
   }
 
   //

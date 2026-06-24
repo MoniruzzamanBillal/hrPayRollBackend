@@ -38,7 +38,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
       switch (prismaError.code) {
         case 'P2002': {
           let target = 'field';
-          if (prismaError.meta?.target) {
+
+          // Extract field name from Prisma error message
+          const match = prismaError.message.match(
+            /Unique constraint failed on the fields?: \(([^)]+)\)/,
+          );
+          if (match) {
+            target = match[1].replace(/`/g, '');
+          } else if (prismaError.meta?.target) {
             target = Array.isArray(prismaError.meta.target)
               ? prismaError.meta.target.join(', ')
               : (prismaError.meta.target as string);
@@ -47,6 +54,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
             if (constraint.includes('email')) target = 'email';
             if (constraint.includes('phone')) target = 'phone';
           }
+
           status = HttpStatus.CONFLICT;
           message = `This ${target} already exists. Please use a different one.`;
           errorName = 'ConflictError';

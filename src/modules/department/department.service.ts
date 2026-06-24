@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { EmployeeStatus } from 'src/generated/prisma/enums';
 import { PrismaService } from 'src/prisma.service';
 import { AddDeptDto } from './dto/AddDeptDto';
 import { UpdateDeptDto } from './dto/UpdateDeptDto';
@@ -52,6 +57,37 @@ export class DepartmentService {
     const result = await this.prisma.department.findUnique({ where: { id } });
 
     return result;
+  }
+
+  // ! for deleting department
+  async deleteDepartment(id: string) {
+    const deptData = await this.prisma.department.findFirst({
+      where: { id, isDeleted: false },
+    });
+
+    if (!deptData) {
+      throw new NotFoundException("This Department don't exist!!!");
+    }
+
+    const activeEmployeeCount = await this.prisma.employee.count({
+      where: {
+        departmentId: id,
+        status: {
+          notIn: [EmployeeStatus.TERMINATED, EmployeeStatus.RESIGNED],
+        },
+      },
+    });
+
+    if (activeEmployeeCount > 0) {
+      throw new BadRequestException(
+        `Cannot delete department. ${activeEmployeeCount} employee(s) are still assigned to it.`,
+      );
+    }
+
+    await this.prisma.department.update({
+      where: { id },
+      data: { isDeleted: true },
+    });
   }
 
   //

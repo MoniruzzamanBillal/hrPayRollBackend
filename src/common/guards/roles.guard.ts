@@ -10,20 +10,6 @@ import { Request } from 'express';
 import { Role } from 'src/generated/prisma/enums';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 
-export interface UserPayload {
-  userId: string;
-  email: string;
-  role: string;
-  iat?: number;
-  exp?: number;
-}
-
-declare module 'express' {
-  interface Request {
-    user?: UserPayload;
-  }
-}
-
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}

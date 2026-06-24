@@ -20,6 +20,7 @@ export class AuthService {
   async loginUser(payload: LoginDto) {
     const userData = await this.prisma.user.findUnique({
       where: { email: payload?.email },
+      include: { employee: true },
     });
 
     if (!userData) {
@@ -39,6 +40,7 @@ export class AuthService {
       email: payload?.email,
       userId: userData?.id,
       role: userData?.role,
+      employeeId: userData.employee?.id ?? null,
     };
 
     const accessToken = await this.jwtService.signAsync(tokenPayload, {
