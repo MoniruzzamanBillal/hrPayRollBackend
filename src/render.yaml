@@ -1,0 +1,17 @@
+# render.yaml
+services:
+  - type: web
+    name: hr-payroll-api
+    runtime: node
+    plan: free
+    buildCommand: yarn install --frozen-lockfile && yarn prisma generate && yarn build
+    startCommand: yarn start:prod
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false # you will set this manually in Render dashboard
+      - key: JWT_SECRET
+        sync: false
+      - key: SALT_ROUNDS
+        sync: false
