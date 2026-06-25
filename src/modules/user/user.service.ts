@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create.user.dto';
+import { GetUserQueryDto } from './dto/get.user.query.dto';
 
 @Injectable()
 export class UserService {
@@ -26,10 +27,42 @@ export class UserService {
     });
   }
 
-  // ! for getting new user
-  async getAllUser() {
-    const result = await this.prisma.user.findMany();
-    return result;
+  // ! for getting all users
+  async getAllUser(query: GetUserQueryDto) {
+    const { search, page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
+
+    const searchFilter = search
+      ? {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' as const } },
+            { email: { contains: search, mode: 'insensitive' as const } },
+          ],
+        }
+      : {};
+
+    const where = { ...searchFilter };
+
+    const [data, totalItems] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        currentPage: page,
+        itemCount: data.length,
+        limit,
+        totalItems,
+        totalPage: Math.ceil(totalItems / limit),
+      },
+    };
   }
 
   // ! for getting single user data

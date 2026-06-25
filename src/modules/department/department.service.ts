@@ -4,8 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { EmployeeStatus } from 'src/generated/prisma/enums';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { AddDeptDto } from './dto/AddDeptDto';
+import { GetDeptQueryDto } from './dto/GetDeptQueryDto';
 import { UpdateDeptDto } from './dto/UpdateDeptDto';
 
 @Injectable()
@@ -42,14 +43,41 @@ export class DepartmentService {
   }
 
   // ! for getting all dept data
-  async getAllDept() {
-    const reuslt = await this.prisma.department.findMany({
-      where: {
-        isDeleted: false,
-      },
-    });
+  async getAllDept(query: GetDeptQueryDto) {
+    const { search, page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
 
-    return reuslt;
+    const searchFilter = search
+      ? {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' as const } },
+            { description: { contains: search, mode: 'insensitive' as const } },
+          ],
+        }
+      : {};
+
+    const where = { isDeleted: false, ...searchFilter };
+
+    const [data, totalItems] = await Promise.all([
+      this.prisma.department.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.department.count({ where }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        currentPage: page,
+        itemCount: data.length,
+        limit,
+        totalItems,
+        totalPage: Math.ceil(totalItems / limit),
+      },
+    };
   }
 
   // ! for getting single department

@@ -4,8 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { EmployeeStatus } from 'src/generated/prisma/enums';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateDesignationDto } from './dto/CreateDesignationDto';
+import { GetDesignationQueryDto } from './dto/GetDesignationQueryDto';
 import { UpdateDesignationDto } from './dto/UpdateDesignationDto';
 
 @Injectable()
@@ -21,13 +22,37 @@ export class DesignationService {
     return result;
   }
 
-  //   ! for getting all department
-  async getAllDepartment() {
-    const result = await this.prisma.designation.findMany({
-      where: { isDeleted: false },
-    });
+  //   ! for getting all designation
+  async getAllDesignation(query: GetDesignationQueryDto) {
+    const { search, page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
 
-    return result;
+    const searchFilter = search
+      ? { title: { contains: search, mode: 'insensitive' as const } }
+      : {};
+
+    const where = { isDeleted: false, ...searchFilter };
+
+    const [data, totalItems] = await Promise.all([
+      this.prisma.designation.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.designation.count({ where }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        currentPage: page,
+        itemCount: data.length,
+        limit,
+        totalItems,
+        totalPage: Math.ceil(totalItems / limit),
+      },
+    };
   }
 
   // ! for getting single department
