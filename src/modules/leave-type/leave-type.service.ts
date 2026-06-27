@@ -1,13 +1,11 @@
 import {
-    ConflictException,
-    Injectable,
-    NotFoundException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateLeaveTypeDto } from './dto/create-leave-type.dto';
-import {
-    UpdateLeaveTypeDto
-} from './dto/update-leave-type.dto';
+import { UpdateLeaveTypeDto } from './dto/update-leave-type.dto';
 
 @Injectable()
 export class LeaveTypeService {

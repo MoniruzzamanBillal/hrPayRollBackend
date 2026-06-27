@@ -7,9 +7,253 @@ datasource db {
   provider = "postgresql"
 }
 
-// ============================================================
-// ENUMS
-// ============================================================
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  role         Role      @default(EMPLOYEE)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  name         String?
+  profileImage String?
+  employee     Employee?
+
+  @@map("users")
+}
+
+model Department {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  description String?
+  createdAt   DateTime   @default(now())
+  isDeleted   Boolean    @default(false)
+  employees   Employee[]
+
+  @@map("departments")
+}
+
+model Designation {
+  id        String     @id @default(uuid())
+  title     String     @unique
+  createdAt DateTime   @default(now())
+  isDeleted Boolean    @default(false)
+  employees Employee[]
+
+  @@map("designations")
+}
+
+model Employee {
+  id                String             @id @default(uuid())
+  employeeCode      String             @unique
+  userId            String             @unique
+  firstName         String
+  lastName          String
+  phone             String?
+  address           String?
+  dateOfBirth       DateTime?
+  joiningDate       DateTime
+  employmentType    EmploymentType     @default(FULL_TIME)
+  status            EmployeeStatus     @default(ACTIVE)
+  departmentId      String
+  designationId     String
+  managerId         String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  attendanceRecords AttendanceRecord[]
+  documents         EmployeeDocument[]
+  department        Department         @relation(fields: [departmentId], references: [id])
+  designation       Designation        @relation(fields: [designationId], references: [id])
+  manager           Employee?          @relation("EmployeeManager", fields: [managerId], references: [id])
+  directReports     Employee[]         @relation("EmployeeManager")
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leaveBalances     LeaveBalance[]
+  approvedLeaves    LeaveRequest[]     @relation("LeaveApprover")
+  leaveRequests     LeaveRequest[]     @relation("LeaveRequester")
+  loans             Loan[]
+  payrollRecords    PayrollRecord[]
+  salaryStructure   SalaryStructure?
+
+  @@index([departmentId])
+  @@index([managerId])
+  @@map("employees")
+}
+
+model EmployeeDocument {
+  id         String   @id @default(uuid())
+  employeeId String
+  type       String
+  fileUrl    String
+  uploadedAt DateTime @default(now())
+  isDeleted  Boolean  @default(false)
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@map("employee_documents")
+}
+
+model AttendanceRecord {
+  id         String           @id @default(uuid())
+  employeeId String
+  date       DateTime         @db.Date
+  checkIn    DateTime?
+  checkOut   DateTime?
+  status     AttendanceStatus @default(PRESENT)
+  notes      String?
+  createdAt  DateTime         @default(now())
+  employee   Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, date])
+  @@index([employeeId, date])
+  @@map("attendance_records")
+}
+
+model LeaveType {
+  id            String         @id @default(uuid())
+  name          String         @unique
+  daysPerYear   Int
+  isPaid        Boolean        @default(true)
+  leaveBalances LeaveBalance[]
+  leaveRequests LeaveRequest[]
+
+  @@map("leave_types")
+}
+
+model LeaveBalance {
+  id          String    @id @default(uuid())
+  employeeId  String
+  leaveTypeId String
+  year        Int
+  totalDays   Float
+  usedDays    Float     @default(0)
+  employee    Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  leaveType   LeaveType @relation(fields: [leaveTypeId], references: [id])
+
+  @@unique([employeeId, leaveTypeId, year])
+  @@map("leave_balances")
+}
+
+model LeaveRequest {
+  id           String      @id @default(uuid())
+  employeeId   String
+  leaveTypeId  String
+  startDate    DateTime    @db.Date
+  endDate      DateTime    @db.Date
+  totalDays    Float
+  reason       String?
+  status       LeaveStatus @default(PENDING)
+  approverId   String?
+  approvedAt   DateTime?
+  rejectReason String?
+  createdAt    DateTime    @default(now())
+  approver     Employee?   @relation("LeaveApprover", fields: [approverId], references: [id])
+  employee     Employee    @relation("LeaveRequester", fields: [employeeId], references: [id], onDelete: Cascade)
+  leaveType    LeaveType   @relation(fields: [leaveTypeId], references: [id])
+
+  @@index([employeeId])
+  @@index([status])
+  @@map("leave_requests")
+}
+
+model SalaryComponent {
+  id             String                @id @default(uuid())
+  name           String                @unique
+  type           SalaryComponentType
+  isFixedAmount  Boolean               @default(true)
+  payslipItems   PayslipItem[]
+  structureItems SalaryStructureItem[]
+
+  @@map("salary_components")
+}
+
+model SalaryStructure {
+  id            String                @id @default(uuid())
+  employeeId    String                @unique
+  basicSalary   Decimal               @db.Decimal(12, 2)
+  effectiveFrom DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  items         SalaryStructureItem[]
+  employee      Employee              @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("salary_structures")
+}
+
+model SalaryStructureItem {
+  id                String          @id @default(uuid())
+  salaryStructureId String
+  componentId       String
+  value             Decimal         @db.Decimal(12, 2)
+  component         SalaryComponent @relation(fields: [componentId], references: [id])
+  salaryStructure   SalaryStructure @relation(fields: [salaryStructureId], references: [id], onDelete: Cascade)
+
+  @@unique([salaryStructureId, componentId])
+  @@map("salary_structure_items")
+}
+
+model PayrollRecord {
+  id              String        @id @default(uuid())
+  employeeId      String
+  month           Int
+  year            Int
+  presentDays     Float
+  absentDays      Float
+  leaveDays       Float
+  grossEarnings   Decimal       @db.Decimal(12, 2)
+  totalDeductions Decimal       @db.Decimal(12, 2)
+  netPay          Decimal       @db.Decimal(12, 2)
+  status          PayrollStatus @default(DRAFT)
+  processedAt     DateTime?
+  paidAt          DateTime?
+  createdAt       DateTime      @default(now())
+  employee        Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  payslipItems    PayslipItem[]
+
+  @@unique([employeeId, month, year])
+  @@index([employeeId])
+  @@index([month, year])
+  @@map("payroll_records")
+}
+
+model PayslipItem {
+  id              String          @id @default(uuid())
+  payrollRecordId String
+  componentId     String
+  amount          Decimal         @db.Decimal(12, 2)
+  component       SalaryComponent @relation(fields: [componentId], references: [id])
+  payrollRecord   PayrollRecord   @relation(fields: [payrollRecordId], references: [id], onDelete: Cascade)
+
+  @@map("payslip_items")
+}
+
+model Loan {
+  id           String          @id @default(uuid())
+  employeeId   String
+  amount       Decimal         @db.Decimal(12, 2)
+  reason       String?
+  installments Int
+  emiAmount    Decimal         @db.Decimal(12, 2)
+  status       LoanStatus      @default(PENDING)
+  requestedAt  DateTime        @default(now())
+  approvedAt   DateTime?
+  repayments   LoanRepayment[]
+  employee     Employee        @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@map("loans")
+}
+
+model LoanRepayment {
+  id     String   @id @default(uuid())
+  loanId String
+  month  Int
+  year   Int
+  amount Decimal  @db.Decimal(12, 2)
+  paidAt DateTime @default(now())
+  loan   Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
+
+  @@unique([loanId, month, year])
+  @@map("loan_repayments")
+}
 
 enum Role {
   ADMIN
@@ -69,310 +313,4 @@ enum LoanStatus {
 enum SalaryComponentType {
   EARNING
   DEDUCTION
-}
-
-// ============================================================
-// CORE: USERS, DEPARTMENTS, DESIGNATIONS
-// ============================================================
-
-model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
-  name         String?
-  profileImage String?
-  passwordHash String
-  role         Role      @default(EMPLOYEE)
-  isActive     Boolean   @default(true)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  employee     Employee?
-
-  @@map("users")
-}
-
-model Department {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  description String?
-  createdAt   DateTime @default(now())
-
-  isDeleted Boolean @default(false)
-
-  employees Employee[]
-
-  @@map("departments")
-}
-
-model Designation {
-  id    String @id @default(uuid())
-  title String @unique
-
-  createdAt DateTime @default(now())
-
-  isDeleted Boolean @default(false)
-
-  employees Employee[]
-
-  @@map("designations")
-}
-
-// ============================================================
-// EMPLOYEE
-// ============================================================
-
-model Employee {
-  id           String @id @default(uuid())
-  employeeCode String @unique // e.g. EMP-0001
-  userId       String @unique
-  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  firstName      String
-  lastName       String
-  phone          String?
-  address        String?
-  dateOfBirth    DateTime?
-  joiningDate    DateTime
-  employmentType EmploymentType @default(FULL_TIME)
-  status         EmployeeStatus @default(ACTIVE)
-
-  departmentId String
-  department   Department @relation(fields: [departmentId], references: [id])
-
-  designationId String
-  designation   Designation @relation(fields: [designationId], references: [id])
-
-  // self-referencing FK: reporting manager is also an Employee
-  managerId     String?
-  manager       Employee?  @relation("EmployeeManager", fields: [managerId], references: [id])
-  directReports Employee[] @relation("EmployeeManager")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // relations
-  documents         EmployeeDocument[]
-  attendanceRecords AttendanceRecord[]
-  leaveBalances     LeaveBalance[]
-  leaveRequests     LeaveRequest[]     @relation("LeaveRequester")
-  approvedLeaves    LeaveRequest[]     @relation("LeaveApprover")
-  salaryStructure   SalaryStructure?
-  payrollRecords    PayrollRecord[]
-  loans             Loan[]
-
-  @@index([departmentId])
-  @@index([managerId])
-  @@map("employees")
-}
-
-model EmployeeDocument {
-  id         String   @id @default(uuid())
-  employeeId String
-  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  type       String // e.g. NID, CONTRACT, CERTIFICATE
-  fileUrl    String
-  uploadedAt DateTime @default(now())
-
-  isDeleted Boolean @default(false)
-
-  @@index([employeeId])
-  @@map("employee_documents")
-}
-
-// ============================================================
-// ATTENDANCE & LEAVE
-// ============================================================
-
-model AttendanceRecord {
-  id         String   @id @default(uuid())
-  employeeId String
-  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-
-  date     DateTime         @db.Date
-  checkIn  DateTime?
-  checkOut DateTime?
-  status   AttendanceStatus @default(PRESENT)
-  notes    String?
-
-  createdAt DateTime @default(now())
-
-  @@unique([employeeId, date]) // one record per employee per day
-  @@index([employeeId, date])
-  @@map("attendance_records")
-}
-
-model LeaveType {
-  id          String  @id @default(uuid())
-  name        String  @unique // e.g. Annual, Sick, Casual
-  daysPerYear Int
-  isPaid      Boolean @default(true)
-
-  leaveBalances LeaveBalance[]
-  leaveRequests LeaveRequest[]
-
-  @@map("leave_types")
-}
-
-model LeaveBalance {
-  id          String    @id @default(uuid())
-  employeeId  String
-  employee    Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  leaveTypeId String
-  leaveType   LeaveType @relation(fields: [leaveTypeId], references: [id])
-  year        Int
-  totalDays   Float
-  usedDays    Float     @default(0)
-
-  @@unique([employeeId, leaveTypeId, year])
-  @@map("leave_balances")
-}
-
-model LeaveRequest {
-  id         String   @id @default(uuid())
-  employeeId String
-  employee   Employee @relation("LeaveRequester", fields: [employeeId], references: [id], onDelete: Cascade)
-
-  leaveTypeId String
-  leaveType   LeaveType @relation(fields: [leaveTypeId], references: [id])
-
-  startDate DateTime    @db.Date
-  endDate   DateTime    @db.Date
-  totalDays Float
-  reason    String?
-  status    LeaveStatus @default(PENDING)
-
-  approverId   String?
-  approver     Employee? @relation("LeaveApprover", fields: [approverId], references: [id])
-  approvedAt   DateTime?
-  rejectReason String?
-
-  createdAt DateTime @default(now())
-
-  @@index([employeeId])
-  @@index([status])
-  @@map("leave_requests")
-}
-
-// ============================================================
-// PAYROLL
-// ============================================================
-
-// Reusable salary component definitions (Basic, House Rent, Tax, Provident Fund, etc.)
-model SalaryComponent {
-  id            String              @id @default(uuid())
-  name          String              @unique
-  type          SalaryComponentType // EARNING or DEDUCTION
-  isFixedAmount Boolean             @default(true) // false = percentage of basic
-
-  structureItems SalaryStructureItem[]
-  payslipItems   PayslipItem[]
-
-  @@map("salary_components")
-}
-
-// One salary structure per employee (current effective salary breakdown)
-model SalaryStructure {
-  id            String   @id @default(uuid())
-  employeeId    String   @unique
-  employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  basicSalary   Decimal  @db.Decimal(12, 2)
-  effectiveFrom DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  items SalaryStructureItem[]
-
-  @@map("salary_structures")
-}
-
-// Junction table: which components apply to this structure, and their amount/percentage
-model SalaryStructureItem {
-  id                String          @id @default(uuid())
-  salaryStructureId String
-  salaryStructure   SalaryStructure @relation(fields: [salaryStructureId], references: [id], onDelete: Cascade)
-  componentId       String
-  component         SalaryComponent @relation(fields: [componentId], references: [id])
-  value             Decimal         @db.Decimal(12, 2) // fixed amount OR percentage value
-
-  @@unique([salaryStructureId, componentId])
-  @@map("salary_structure_items")
-}
-
-// One record per employee per payroll month
-model PayrollRecord {
-  id         String   @id @default(uuid())
-  employeeId String
-  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-
-  month Int // 1-12
-  year  Int
-
-  presentDays Float
-  absentDays  Float
-  leaveDays   Float
-
-  grossEarnings   Decimal @db.Decimal(12, 2)
-  totalDeductions Decimal @db.Decimal(12, 2)
-  netPay          Decimal @db.Decimal(12, 2)
-
-  status      PayrollStatus @default(DRAFT)
-  processedAt DateTime?
-  paidAt      DateTime?
-
-  createdAt DateTime @default(now())
-
-  payslipItems PayslipItem[]
-
-  @@unique([employeeId, month, year]) // prevent duplicate payroll runs
-  @@index([employeeId])
-  @@index([month, year])
-  @@map("payroll_records")
-}
-
-// Line-item breakdown of a single payslip (mirrors SalaryStructureItem at time of processing)
-model PayslipItem {
-  id              String          @id @default(uuid())
-  payrollRecordId String
-  payrollRecord   PayrollRecord   @relation(fields: [payrollRecordId], references: [id], onDelete: Cascade)
-  componentId     String
-  component       SalaryComponent @relation(fields: [componentId], references: [id])
-  amount          Decimal         @db.Decimal(12, 2)
-
-  @@map("payslip_items")
-}
-
-// ============================================================
-// LOANS / ADVANCES
-// ============================================================
-
-model Loan {
-  id         String   @id @default(uuid())
-  employeeId String
-  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-
-  amount       Decimal    @db.Decimal(12, 2)
-  reason       String?
-  installments Int // number of months to repay
-  emiAmount    Decimal    @db.Decimal(12, 2)
-  status       LoanStatus @default(PENDING)
-
-  requestedAt DateTime  @default(now())
-  approvedAt  DateTime?
-
-  repayments LoanRepayment[]
-
-  @@index([employeeId])
-  @@map("loans")
-}
-
-// Tracks each month's EMI deduction against a loan (links to the payroll month it was deducted in)
-model LoanRepayment {
-  id     String   @id @default(uuid())
-  loanId String
-  loan   Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
-  month  Int
-  year   Int
-  amount Decimal  @db.Decimal(12, 2)
-  paidAt DateTime @default(now())
-
-  @@unique([loanId, month, year])
-  @@map("loan_repayments")
 }

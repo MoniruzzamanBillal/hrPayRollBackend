@@ -19,6 +19,22 @@ export class EmployeeService {
 
   // ! for creating a new employee
   async addEmployee(payload: CreateEmployeeDto, imageUrl?: string) {
+    const isDeptExist = await this.prisma.department.findUnique({
+      where: { id: payload?.departmentId, isDeleted: false },
+    });
+
+    if (!isDeptExist) {
+      throw new NotFoundException("This Department Don't exist!!!");
+    }
+
+    const isDesigExist = await this.prisma.designation.findUnique({
+      where: { id: payload?.designationId, isDeleted: false },
+    });
+
+    if (!isDesigExist) {
+      throw new NotFoundException("This Designation Don't exist!!!");
+    }
+
     const saltRounds = parseInt(process.env.SALT_ROUNDS || '10');
 
     const hashedPassword = await bcrypt.hash(payload?.password, saltRounds);
