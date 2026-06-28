@@ -19,10 +19,11 @@ import { EmployeeModule } from './modules/employee/employee.module';
 import { LeaveBalanceModule } from './modules/leave-balance/leave-balance.module';
 import { LeaveRequestModule } from './modules/leave-request/leave-request.module';
 import { LeaveTypeModule } from './modules/leave-type/leave-type.module';
-import { UserModule } from './modules/user/user.module';
-import { PrismaModule } from './prisma/prisma.module';
+import { PayrollModule } from './modules/payroll/payroll.module';
 import { SalaryComponentModule } from './modules/salary-component/salary-component.module';
 import { SalaryStructureModule } from './modules/salary-structure/salary-structure.module';
+import { UserModule } from './modules/user/user.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
@@ -54,6 +55,8 @@ import { SalaryStructureModule } from './modules/salary-structure/salary-structu
     SalaryComponentModule,
 
     SalaryStructureModule,
+
+    PayrollModule,
   ],
   controllers: [AppController],
   providers: [
