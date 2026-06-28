@@ -53,9 +53,9 @@ export class LeaveBalanceService {
         employeeId: dto.employeeId,
         leaveTypeId: dto.leaveTypeId,
         year: dto.year,
-        totalDays: dto.totalDays,
+        totalDays: leaveType?.daysPerYear,
       },
-      include: { leaveType: true },
+      include: { leaveType: true, employee: true },
     });
   }
 
@@ -69,7 +69,7 @@ export class LeaveBalanceService {
 
     return this.prisma.leaveBalance.findMany({
       where: { employeeId: user.employeeId },
-      include: { leaveType: true },
+      include: { leaveType: true, employee: true },
       orderBy: { year: 'desc' },
     });
   }

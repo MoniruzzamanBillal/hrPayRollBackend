@@ -97,7 +97,7 @@ export class LeaveRequestService {
 
     return this.prisma.leaveRequest.findMany({
       where: { employeeId: user.employeeId },
-      include: { leaveType: true },
+      include: { leaveType: true, employee: true, approver: true },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -148,7 +148,7 @@ export class LeaveRequestService {
           approverId: user.employeeId,
           approvedAt: new Date(),
         },
-        include: { leaveType: true },
+        include: { leaveType: true, employee: true },
       });
 
       await tx.leaveBalance.update({

@@ -107,6 +107,10 @@ export class EmployeeService {
     const [data, totalItems] = await Promise.all([
       this.prisma.employee.findMany({
         where,
+        include: {
+          department: true,
+          designation: true,
+        },
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
@@ -143,6 +147,8 @@ export class EmployeeService {
             isDeleted: false,
           },
         },
+        department: true,
+        designation: true,
       },
     });
 
@@ -273,13 +279,15 @@ export class EmployeeService {
       throw new ForbiddenException('Current user is not an employee.');
     }
 
-    await this.prisma.employeeDocument.create({
+    const result = await this.prisma.employeeDocument.create({
       data: {
         employeeId: employee.id,
         type: payload.type,
         fileUrl,
       },
     });
+
+    return result;
   }
 
   //

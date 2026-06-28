@@ -27,12 +27,13 @@ import { UpdateEmployeeDto } from './dto/UpdateEmployeeDto';
 import { EmployeeService } from './employee.service';
 
 @Controller('employee')
+@UseGuards(JwtAuthGuard)
 export class EmployeeController {
   //
   constructor(private employeeService: EmployeeService) {}
 
   // ! for creating a new employee
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.HR_MANAGER)
   @Post('')
   @UseInterceptors(
@@ -86,7 +87,7 @@ export class EmployeeController {
   }
 
   // ! for updating employee
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.HR_MANAGER)
   @Patch(':id')
   @UseInterceptors(
@@ -117,7 +118,7 @@ export class EmployeeController {
   }
 
   // ! for terminating employee
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.HR_MANAGER)
   @Delete(':id')
   async terminateEmployee(@Param('id') id: string) {
@@ -129,7 +130,7 @@ export class EmployeeController {
   }
 
   // ! for uploading employee document
-  @UseGuards(JwtAuthGuard)
+
   @Post('document')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -153,7 +154,7 @@ export class EmployeeController {
       throw new BadRequestException('File is required');
     }
 
-    await this.employeeService.addEmployeeDocument(
+    const result = await this.employeeService.addEmployeeDocument(
       user.userId,
       payload,
       fileUrl,
@@ -161,6 +162,7 @@ export class EmployeeController {
 
     return {
       message: 'Employee Document uploaded successfully!!!',
+      result,
     };
   }
 
