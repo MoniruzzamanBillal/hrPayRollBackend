@@ -21,6 +21,8 @@ import { LeaveRequestModule } from './modules/leave-request/leave-request.module
 import { LeaveTypeModule } from './modules/leave-type/leave-type.module';
 import { UserModule } from './modules/user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { SalaryComponentModule } from './modules/salary-component/salary-component.module';
+import { SalaryStructureModule } from './modules/salary-structure/salary-structure.module';
 
 @Module({
   imports: [
@@ -48,6 +50,10 @@ import { PrismaModule } from './prisma/prisma.module';
     LeaveTypeModule,
 
     LeaveBalanceModule,
+
+    SalaryComponentModule,
+
+    SalaryStructureModule,
   ],
   controllers: [AppController],
   providers: [
