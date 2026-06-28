@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, Min } from 'class-validator';
 
 export class CreateLeaveBalanceDto {
   @IsString()
@@ -13,7 +13,7 @@ export class CreateLeaveBalanceDto {
   @Min(2000)
   year: number;
 
-  @IsNumber()
-  @Min(0)
-  totalDays: number;
+  // @IsNumber()
+  // @Min(0)
+  // totalDays: number;
 }
